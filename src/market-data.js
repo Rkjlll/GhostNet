@@ -1,0 +1,4 @@
+const SYMBOLS=["AAPL","MSFT","NVDA","SPY","AMD"],SEED={AAPL:214.2,MSFT:512.3,NVDA:181.6,SPY:671.1,AMD:164.8};
+export function getSymbols(){return [...SYMBOLS];}
+export async function fetchQuote(symbol){try{const r=await fetch("/api/quote?symbol="+encodeURIComponent(symbol),{cache:"no-store"});if(r.ok){const q=await r.json();if(Number.isFinite(q.price)&&q.price>0)return {...q,source:q.source||"LIVE_PROVIDER"};}}catch{}const base=SEED[symbol]||100,phase=Date.now()/45000+SYMBOLS.indexOf(symbol)*1.7,price=Number((base*(1+Math.sin(phase)*.006+Math.cos(phase*.37)*.002)).toFixed(2));return {symbol,price,changePct:Number((Math.sin(phase)*.7).toFixed(2)),timestamp:new Date().toISOString(),source:"SIMULATED",isRealtime:false};}
+export function appendQuote(store,q){return {...store,[q.symbol]:[...(store[q.symbol]||[]),{price:q.price,timestamp:q.timestamp}].slice(-80)};}
