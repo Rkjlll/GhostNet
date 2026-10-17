@@ -1,0 +1,14 @@
+{
+  "name": "ghostnet",
+  "version": "0.2.0",
+  "private": false,
+  "type": "module",
+  "description": "Offline-first RF observatory and risk-controlled paper-trading lab",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test"
+  }
+}
