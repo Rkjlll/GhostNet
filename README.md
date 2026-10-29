@@ -31,3 +31,23 @@ No strategy can guarantee maximum income. The score is a transparent heuristic, 
 - docs/ — trading, RF hardware, and security notes
 
 The RF module is simulated; real RF measurements require compatible hardware. Ambient RF harvesting generally cannot continuously power a phone or general-purpose computer.
+
+## Telemetry provenance: read the label before the number
+
+Every dashboard value must carry one of these labels. The label tells you where the value came from, not how impressive it looks.
+
+- **SIMULATED** means GhostNet generated the value or calculated it from a model. Examples: RF activity, modeled energy reserve/harvest/consumption, synthetic backtests, heuristic scores, and paper-trading fills. These are not hardware measurements or real money.
+- **MEASURED** means the app actually observed a value or received it from a named external data provider. The dashboard shows the source where available. Market-provider quotes are provider-supplied data, not measurements made by your phone. Local API round-trip time is measured only for that browser request.
+- **UNAVAILABLE** means no usable reading was obtained or the browser does not expose that sensor/API. A dash means unknown, not zero. The app must not silently substitute generated numbers and call them measured.
+
+The **Simulation layer** and **Real systems layer** are separate panels. Simulated values stay in the simulation panel. The real-systems panel reports only browser-observed network/API health and supported battery information; unsupported readings remain UNAVAILABLE. A successful local API request does not prove Internet-wide connectivity, radio signal strength, or physical RF activity.
+
+### Provenance build gate
+
+Run the complete build check and tests with:
+
+```sh
+npm run build
+```
+
+The build fails if a statically declared dashboard value lacks a valid `data-status`, if a declared value is written directly with `.textContent` instead of the shared label renderer, or if the required separate panels are missing. Dynamic dashboard values must use the shared helpers in `src/telemetry.js`; CI runs this check before tests. If you add a new value, label its provenance and add a test when appropriate. Do not weaken the check to make an unlabeled value pass.

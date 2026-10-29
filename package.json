@@ -9,6 +9,8 @@
   },
   "scripts": {
     "start": "node server/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "check:labels": "node scripts/check-value-labels.js",
+    "build": "npm run check:labels && npm test"
   }
 }
