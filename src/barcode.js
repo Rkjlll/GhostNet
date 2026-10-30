@@ -4,7 +4,7 @@ const CODE39 = {
 "K":"wnnnnnnww","L":"nnwnnnnww","M":"wnwnnnnwn","N":"nnnnwnnww","O":"wnnnwnnwn","P":"nnwnwnnwn","Q":"nnnnnnwww","R":"wnnnnnwwn","S":"nnwnnnwwn","T":"nnnnwnwwn",
 "U":"wwnnnnnnw","V":"nwwnnnnnw","W":"wwwnnnnnn","X":"nwnnwnnnw","Y":"wwnnwnnnn","Z":"nwwnwnnnn","-":"nwnnnnwnw",".":"wwnnnnwnn"," ":"nwwnnnwnn","$":"nwnwnwnnn","/":"nwnwnnnwn","+":"nwnnnwnwn","%":"nnnwnwnwn","*":"nwnnwnwnn"
 };
-export function normalizeBarcodeInput(value){return String(value??"").replace(/[\\u0000-\\u001f\\u007f]/g,"").trim();}
+export function normalizeBarcodeInput(value){return String(value??"").replace(/[\u0000-\u001f\u007f]/g,"").trim();}
 export function transformBarcodeData(value,ops={}) {
  let out=normalizeBarcodeInput(value);
  if(ops.trim!==false) out=out.trim();
@@ -19,12 +19,12 @@ export function validateBarcodeData(value,format="CODE39"){
  const v=normalizeBarcodeInput(value);
  if(!v) return {valid:false,message:"Enter barcode data first."};
  if(format==="EAN13"){
-  if(!/^\\d{13}$/.test(v)) return {valid:false,message:"EAN-13 requires exactly 13 digits."};
+  if(!/^\d{13}$/.test(v)) return {valid:false,message:"EAN-13 requires exactly 13 digits."};
   const digits=v.split("").map(Number),sum=digits.slice(0,12).reduce((s,n,i)=>s+n*(i%2?3:1),0),check=(10-sum%10)%10;
   return {valid:check===digits[12],message:check===digits[12]?"Valid EAN-13 check digit.":"EAN-13 check digit does not match."};
  }
  if(format==="UPCA"){
-  if(!/^\\d{12}$/.test(v)) return {valid:false,message:"UPC-A requires exactly 12 digits."};
+  if(!/^\d{12}$/.test(v)) return {valid:false,message:"UPC-A requires exactly 12 digits."};
   const d=v.split("").map(Number),sum=d.slice(0,11).reduce((s,n,i)=>s+n*(i%2?3:1),0),check=(10-sum%10)%10;
   return {valid:check===d[11],message:check===d[11]?"Valid UPC-A check digit.":"UPC-A check digit does not match."};
  }
