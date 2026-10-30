@@ -51,3 +51,16 @@ npm run build
 ```
 
 The build fails if a statically declared dashboard value lacks a valid `data-status`, if a declared value is written directly with `.textContent` instead of the shared label renderer, or if the required separate panels are missing. Dynamic dashboard values must use the shared helpers in `src/telemetry.js`; CI runs this check before tests. If you add a new value, label its provenance and add a test when appropriate. Do not weaken the check to make an unlabeled value pass.
+
+## Barcode Intelligence workbench
+
+The dashboard includes a browser-side barcode workspace for data you own or are authorized to process.
+
+- Scan supported formats with the browser `BarcodeDetector` API when the device/browser exposes it. A hardware scanner in keyboard-wedge mode can enter data into the input field.
+- Preserve the original scanned/entered payload while previewing transformations: trim control characters, change letter case, add a prefix/suffix, and replace matching text.
+- Validate Code 39 character support, EAN-13 check digits, and UPC-A check digits.
+- Generate and download a **custom Code 39 SVG** for internal labels.
+- EAN-13 and UPC-A are validation-only. This tool does not rewrite official retail product identifiers or represent custom labels as manufacturer-issued codes.
+- Camera access requires browser permission and a secure context (normally HTTPS or localhost). BarcodeDetector format support varies by browser/device; manual entry remains available.
+
+Barcode transformation changes the payload used for a custom output. It does not rewrite a physical barcode or alter a manufacturer's product database. Test labels against your actual scanner and workflow before operational use.
