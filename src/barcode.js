@@ -18,6 +18,7 @@ export function transformBarcodeData(value,ops={}) {
 export function validateBarcodeData(value,format="CODE39"){
  const v=normalizeBarcodeInput(value);
  if(!v) return {valid:false,message:"Enter barcode data first."};
+ if(format==="TEXT") return {valid:true,message:"Payload available for inspection and transformation; generation is disabled for this format."};
  if(format==="EAN13"){
   if(!/^\d{13}$/.test(v)) return {valid:false,message:"EAN-13 requires exactly 13 digits."};
   const digits=v.split("").map(Number),sum=digits.slice(0,12).reduce((s,n,i)=>s+n*(i%2?3:1),0),check=(10-sum%10)%10;
@@ -55,17 +56,17 @@ export function initBarcodeUI(){
  const scan=async()=>{
   if(!("BarcodeDetector" in window)){status("Live scanning is unavailable in this browser. Enter data manually or use a compatible camera scanner.","warn");return;}
   try{const detector=new BarcodeDetector({formats:["code_128","code_39","ean_13","upc_a","qr_code","ean_8","upc_e"]}),stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}}});const video=$("barcodeVideo");video.srcObject=stream;await video.play();$("barcodeScanPanel").hidden=false;status("Camera active. Hold a barcode in view.");let active=true;const stop=()=>{active=false;stream.getTracks().forEach(t=>t.stop());video.srcObject=null;$("barcodeScanPanel").hidden=true;};$("barcodeStopScan").onclick=stop;
-  const tick=async()=>{if(!active)return;try{const found=await detector.detect(video);if(found.length){input.value=found[0].rawValue;$("barcodeFormat").value=found[0].format==="ean_13"?"EAN13":found[0].format==="upc_a"?"UPCA":"CODE39";stop();render();status("Scanned "+found[0].format+" data. Original value preserved in the input.","ok");return;}}catch{}requestAnimationFrame(tick);};tick();
+  const tick=async()=>{if(!active)return;try{const found=await detector.detect(video);if(found.length){input.value=found[0].rawValue;$("barcodeFormat").value=found[0].format==="ean_13"?"EAN13":found[0].format==="upc_a"?"UPCA":found[0].format==="code_39"?"CODE39":"TEXT";stop();render();status("Scanned "+found[0].format+" data. Original value preserved in the input.","ok");return;}}catch{}requestAnimationFrame(tick);};tick();
   }catch(e){status("Camera could not start: "+e.message,"error");}
  };
  const render=()=>{
   const raw=normalizeBarcodeInput(input.value),format=$("barcodeFormat").value,ops={case:$("barcodeCase").value,prefix:$("barcodePrefix").value,suffix:$("barcodeSuffix").value,find:$("barcodeFind").value,replace:$("barcodeReplace").value},out=transformBarcodeData(raw,ops),validation=validateBarcodeData(out,format);
   $("barcodeOriginal").textContent=raw||"—";$("barcodeTransformed").textContent=out||"—";$("barcodeValidation").textContent=validation.message;$("barcodeValidation").dataset.kind=validation.valid?"ok":"error";
-  const productFormat=format==="EAN13"||format==="UPCA";
-  $("barcodeGenerate").disabled=!validation.valid||productFormat;
-  $("barcodeFormatNote").textContent=productFormat?"Product identifiers are validation-only here. Use your authorized GS1/manufacturer workflow for official retail identifiers.":"Generated output is a custom/internal Code 39 label, not a manufacturer-issued product code.";
+  const productFormat=format==="EAN13"||format==="UPCA",textOnly=format==="TEXT";
+  $("barcodeGenerate").disabled=!validation.valid||productFormat||textOnly;
+  $("barcodeFormatNote").textContent=productFormat?"Product identifiers are validation-only here. Use your authorized GS1/manufacturer workflow for official retail identifiers.":textOnly?"Generic scanned payload is inspection-only. Select Code 39 to generate a custom internal label.":"Generated output is a custom/internal Code 39 label, not a manufacturer-issued product code.";
   $("barcodePreview").innerHTML="";
-  if(validation.valid&&!productFormat){try{$("barcodePreview").innerHTML=makeCode39Svg(out);}catch(e){$("barcodeValidation").textContent=e.message;}}
+  if(validation.valid&&!productFormat&&!textOnly){try{$("barcodePreview").innerHTML=makeCode39Svg(out);}catch(e){$("barcodeValidation").textContent=e.message;}}
   return {raw,out,format,validation};
  };
  ["barcodeInput","barcodeFormat","barcodeCase","barcodePrefix","barcodeSuffix","barcodeFind","barcodeReplace"].forEach(id=>$(id).addEventListener(id==="barcodeInput"?"input":"change",render));
